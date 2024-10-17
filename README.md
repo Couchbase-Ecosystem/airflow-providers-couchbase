@@ -14,7 +14,6 @@ pip install airflow-providers-couchbase
 
 This section demonstrates how to run the example DAG inside an Airflow Docker container. A `docker` folder is provided in the repository, containing a `Dockerfile` and `docker-compose.yaml` file for setting up the Couchbase provider and running Airflow. Additionally, a sample DAG file `airflow_test_cb_cluster.py` is available in the `docker/dags` folder, which interacts with a Couchbase cluster.
 
-
 ### Prerequisites
 
 - Docker and Docker Compose installed on your machine.
@@ -37,7 +36,7 @@ This section demonstrates how to run the example DAG inside an Airflow Docker co
     ```
 
 3. Access the Airflow Web UI:
-    Open your web browser and navigate to http://localhost:8080 to access the Airflow web UI.
+    Open your web browser and navigate to <http://localhost:8080> to access the Airflow web UI.
 4. Configure a Couchbase Connection:
     Navigate to Airflow Connections and configure the Couchbase connection with the following details:
     - Connection Id: couchbase_default
