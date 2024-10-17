@@ -1,13 +1,13 @@
-# airflow-provider-couchbase
+# airflow-providers-couchbase
 
-The `airflow-provider-couchbase` enables interactions with Couchbase clusters within Apache Airflow workflows. It provides custom Couchbase Hook that allow users to seamlessly interact with Couchbase databases, execute queries, manage documents, and more.
+The `airflow-providers-couchbase` enables interactions with Couchbase clusters within Apache Airflow workflows. It provides custom Couchbase Hook that allow users to seamlessly interact with Couchbase databases, execute queries, manage documents, and more.
 
 ## Installation
 
-To install the `airflow-provider-couchbase` package, run:
+To install the `airflow-providers-couchbase` package, run:
 
 ```bash
-pip install airflow-provider-couchbase
+pip install airflow-providers-couchbase
 ```
 
 ## Running a DAG Example Inside an Airflow Docker Container
