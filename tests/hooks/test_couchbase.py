@@ -37,9 +37,9 @@ pytestmark = pytest.mark.unit_test
 
 
 class TestCouchbaseHook:
-    @mock.patch("airflow_provider_couchbase.hooks.couchbase.Cluster")
+    @mock.patch("airflow_providers_couchbase.hooks.couchbase.Cluster")
     @mock.patch(
-        "airflow_provider_couchbase.hooks.couchbase.CouchbaseHook.get_connection",
+        "airflow_providers_couchbase.hooks.couchbase.CouchbaseHook.get_connection",
         return_value=Connection(
             login="user",
             password="password",
@@ -55,9 +55,9 @@ class TestCouchbaseHook:
         assert hook.cluster_config is CouchbaseHook.default_config, "cluster_config initialised as ClusterOptions()."
         assert hook.get_conn() is hook.get_conn(), "Connection initialized only if None."
 
-    @mock.patch("airflow_provider_couchbase.hooks.couchbase.Cluster")
+    @mock.patch("airflow_providers_couchbase.hooks.couchbase.Cluster")
     @mock.patch(
-        "airflow_provider_couchbase.hooks.couchbase.CouchbaseHook.get_connection",
+        "airflow_providers_couchbase.hooks.couchbase.CouchbaseHook.get_connection",
         return_value=Connection(
             login="user",
             password="password",
@@ -83,9 +83,9 @@ class TestCouchbaseHook:
             ),
         )
 
-    @mock.patch("airflow_provider_couchbase.hooks.couchbase.Cluster")
+    @mock.patch("airflow_providers_couchbase.hooks.couchbase.Cluster")
     @mock.patch(
-        "airflow_provider_couchbase.hooks.couchbase.CouchbaseHook.get_connection",
+        "airflow_providers_couchbase.hooks.couchbase.CouchbaseHook.get_connection",
         return_value=Connection(
             host="remote_host",
             extra="""{
@@ -110,9 +110,9 @@ class TestCouchbaseHook:
             ),
         )
 
-    @mock.patch("airflow_provider_couchbase.hooks.couchbase.Cluster")
+    @mock.patch("airflow_providers_couchbase.hooks.couchbase.Cluster")
     @mock.patch(
-        "airflow_provider_couchbase.hooks.couchbase.CouchbaseHook.get_connection",
+        "airflow_providers_couchbase.hooks.couchbase.CouchbaseHook.get_connection",
         return_value=Connection(
             login="user",
             password="password",
@@ -133,9 +133,9 @@ class TestCouchbaseHook:
             ),
         )
 
-    @mock.patch("airflow_provider_couchbase.hooks.couchbase.Cluster")
+    @mock.patch("airflow_providers_couchbase.hooks.couchbase.Cluster")
     @mock.patch(
-        "airflow_provider_couchbase.hooks.couchbase.CouchbaseHook.get_connection",
+        "airflow_providers_couchbase.hooks.couchbase.CouchbaseHook.get_connection",
         return_value=Connection(
             login="user",
             password="password",
@@ -169,9 +169,9 @@ class TestCouchbaseHook:
         mock_bucket.scope.assert_called_once_with("scope")
         assert isinstance(scope, couchbase.scope.Scope), "collection is not of type Collection"
 
-    @mock.patch("airflow_provider_couchbase.hooks.couchbase.Cluster")
+    @mock.patch("airflow_providers_couchbase.hooks.couchbase.Cluster")
     @mock.patch(
-        "airflow_provider_couchbase.hooks.couchbase.CouchbaseHook.get_connection",
+        "airflow_providers_couchbase.hooks.couchbase.CouchbaseHook.get_connection",
         return_value=Connection(
             login="user",
             password="password",
