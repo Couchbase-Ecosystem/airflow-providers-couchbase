@@ -1,0 +1,48 @@
+name: Build & test Airflow
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+    
+jobs:
+
+  build:
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    
+    steps:
+  
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.9"
+    
+    - name: Install & Run Airflow
+      run: |
+        cd docker
+        echo -e "AIRFLOW_UID=$(id -u)" > .env
+        docker compose up airflow-init
+        docker compose up -d --build
+    
+    - name: Add couchbase connection to Airflow
+      run: |
+        DOCKID=$(docker ps -q --filter "name=docker-airflow-worker-1")
+        docker exec $DOCKID airflow connections add couchbase_conn_id --conn-type couchbase --conn-login ${{ secrets.DB_USERNAME }} --conn-host ${{ secrets.DB_CONN_STR }} --conn-password ${{ secrets.DB_PASSWORD }} 
+
+    - name: Install Hatch
+      run: pip install --upgrade hatch
+  
+    - name: Run tests
+      run: |
+        hatch run test -m integration_test -vv
+
+    
+    - name: Stop docker containers
+      if: always()
+      run: |
+        cd docker
+        docker compose down
+        
