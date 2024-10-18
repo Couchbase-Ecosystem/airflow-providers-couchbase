@@ -1,6 +1,6 @@
 <h1 align="center">airflow-providers-couchbase</h1>
 
-<p align="center">A custom <a href="https://airflow.apache.org/"><i>Apache Airflow</i></a> provider for <a href="https://www.couchbase.com"><i>Couchbase</i></a>, enabling seamless interactions between Airflow and Couchbase clusters.</p>
+<p align="center">A custom <a href="https://airflow.apache.org/"><i>Apache Airflow</i></a> provider for <a href="https://www.couchbase.com"><i>Couchbase</i></a></p>
 
 <p align="center">
   <a href="https://github.com/Couchbase-Ecosystem/airflow-providers-couchbase/actions?query=workflow%3Aci-integration-test">
@@ -14,17 +14,17 @@
   </a>
 </p>
 
-
 ----
 
 **Table of Contents**
 
 - [Overview](#overview)
 - [Installation](#installation)
-- [Usage](#usage)
+- [Running a DAG in Docker](#running-a-dag-example-inside-an-airflow-docker-container)
+- [Additional Resources](#additional-resources)
 - [License](#license)
 
-# airflow-providers-couchbase
+## Overview
 
 The `airflow-providers-couchbase` enables interactions with Couchbase clusters within Apache Airflow workflows. It provides custom Couchbase Hook that allow users to seamlessly interact with Couchbase databases, execute queries, manage documents, and more.
 
@@ -46,7 +46,7 @@ This section demonstrates how to run the example DAG inside an Airflow Docker co
 - A running Couchbase cluster accessible from your Docker container. If you don’t have one, download and install Couchbase Server from the official website.
 - The travel-sample bucket should be available in your Couchbase cluster. If not, you can import it from Couchbase sample buckets.
 
-## Steps to Run the Example DAG
+### Steps to Run the Example DAG
 
 1. Navigate to the Docker Directory:
 
@@ -75,7 +75,7 @@ This section demonstrates how to run the example DAG inside an Airflow Docker co
 6. Inspect the Logs:
     Click on each task and check the logs to verify the execution of Couchbase queries.
 
-## Clean Up
+### Clean Up
 
 To stop and remove the Docker containers and volumes, run:
 
@@ -85,5 +85,9 @@ docker-compose down -v
 
 ## Additional Resources
 
-- Airflow Installation Guide
-- Apache Airflow Documentation
+- [Apache Airflow Documentation](https://airflow.apache.org/docs/apache-airflow/stable/index.html)
+- [Airflow Installation Guide](https://airflow.apache.org/docs/apache-airflow/stable/installation/index.html)
+
+## License
+
+`airflow-providers-couchbase` is distributed under the terms of the [MIT](https://spdx.org/licenses/MIT.html) license.
