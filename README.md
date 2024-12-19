@@ -130,7 +130,7 @@ Remember to initialize your Couchbase Server with:
 6. **Monitor the Execution**:
    - Click on the DAG run to view progress
    - View logs, duration, and status for each task
-   - For a visual guide of this process, check our step-by-step tutorial on [YouTube](https://youtu.be/YOUR_VIDEO_ID)
+   - For a visual guide of this process, check our step-by-step tutorial on [docs/videos/airflow](docs/videos/airflow.mp4)
 
 ### Example DAGs Explanation
 
