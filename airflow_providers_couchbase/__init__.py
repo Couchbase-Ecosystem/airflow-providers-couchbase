@@ -1,5 +1,8 @@
 from .__about__ import __version__
 
+# --- Package-level telemetry (non-blocking, fire-and-forget) ---
+import airflow_providers_couchbase.telemetry  # noqa: F401, E402
+
 
 def get_provider_info():
     return {
