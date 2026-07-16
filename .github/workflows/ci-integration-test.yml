@@ -33,7 +33,7 @@ jobs:
         docker exec $DOCKID airflow connections add couchbase_conn_id --conn-type couchbase --conn-login ${{ secrets.DB_USERNAME }} --conn-host ${{ secrets.DB_CONN_STR }} --conn-password ${{ secrets.DB_PASSWORD }} 
 
     - name: Install Hatch
-      run: pip install --upgrade hatch
+      run: pip install --upgrade "hatch" "virtualenv<21"
   
     - name: Run tests
       run: |
