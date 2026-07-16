@@ -1,6 +1,5 @@
-from importlib.metadata import version
-
 try:
+    from importlib.metadata import version
     from reo_census import ReoEventLogger
 
     _pkg_version = version("airflow-providers-couchbase")
