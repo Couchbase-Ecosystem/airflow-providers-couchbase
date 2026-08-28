@@ -45,6 +45,19 @@ jobs:
           "$(go env GOPATH)/bin/git-chglog" -c ./.chglog/config-action.yml -o /tmp/changelog.md
 
 
+      - name: Check package version matches tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          tag_version="${GITHUB_REF_NAME#v}"
+          pkg_version="$(hatch version)"
+          if [ "$tag_version" != "$pkg_version" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME implies version $tag_version, but" \
+                 "airflow_providers_couchbase/__about__.py says $pkg_version." \
+                 "Bump __about__.py and re-tag."
+            exit 1
+          fi
+          echo "Version $pkg_version matches tag $GITHUB_REF_NAME."
+
       - name: Build package
         run: hatch build
 
