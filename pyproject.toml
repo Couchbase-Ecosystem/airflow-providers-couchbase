@@ -74,6 +74,9 @@ dependencies = [
   "black>=23.1.0",
   "mypy>=1.0.0",
   "ruff>=0.0.243",
+  # Needed so mypy sees real pytest types (e.g. ``skip()`` returning ``NoReturn``)
+  # instead of resolving the module to ``Any`` via ``ignore_missing_imports``.
+  "pytest",
 ]
 
 [tool.hatch.envs.lint.scripts]
