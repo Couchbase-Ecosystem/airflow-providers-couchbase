@@ -20,6 +20,7 @@
 
 - [Overview](#overview)
 - [Installation](#installation)
+- [Upgrading to 2.0.0](#upgrading-to-200)
 - [Running a DAG in Docker](#running-a-dag-example-inside-an-airflow-docker-container)
   - [Prerequisites](#prerequisites)
   - [Connecting to a Local Couchbase Server](#connecting-to-a-local-couchbase-server)
@@ -40,6 +41,22 @@ For those new to Apache Airflow, a [DAG (Directed Acyclic Graph)](https://airflo
 ```bash
 pip install airflow-providers-couchbase
 ```
+
+## Upgrading to 2.0.0
+
+`2.0.0` targets Apache Airflow 3 and drops support for Airflow 2. If you are still on Airflow 2,
+stay on `1.0.0`.
+
+Breaking changes:
+
+- **Apache Airflow `>= 3.3.1, < 4.0.0`** (was `>= 2.2`). The hook now subclasses
+  `airflow.sdk.BaseHook` and will not import under Airflow 2.
+- **Python `>= 3.11`** (was `>= 3.7`).
+- **`Config` is now a `TypedDict`** instead of a `dict` subclass, covering the same options.
+  `Config(...)` calls, `Config()`, and dict literals keep working; only two edge cases changed:
+  `Config(kv_timeout=None)` is now a type error (omit the key instead), and
+  `isinstance(config, Config)` now raises `TypeError` (use `isinstance(config, dict)`).
+- **`CouchbaseHook.default_config` removed.** `config` now defaults to `None`.
 
 ## Running a DAG Example Inside an Airflow Docker Container
 
