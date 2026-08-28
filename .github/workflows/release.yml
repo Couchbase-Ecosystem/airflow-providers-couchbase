@@ -31,11 +31,18 @@ jobs:
           pip install --upgrade pip 
           pip install hatch
 
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+
       - name: Generate Changelog
         run: |
           go install github.com/git-chglog/git-chglog/cmd/git-chglog@v0.15.4
+          # `go install` drops the binary in $(go env GOPATH)/bin, which is not on
+          # the runner's PATH, so invoke it by its absolute path.
           # Generate the changelog using git-chglog and store it in a temporary file
-          git-chglog -c ./.chglog/config-action.yml -o /tmp/changelog.md
+          "$(go env GOPATH)/bin/git-chglog" -c ./.chglog/config-action.yml -o /tmp/changelog.md
 
 
       - name: Build package
