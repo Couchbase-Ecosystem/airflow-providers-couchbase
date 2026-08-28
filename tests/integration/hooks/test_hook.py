@@ -1,60 +1,53 @@
-from datetime import datetime
-import logging
-import os
-import re
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+"""End-to-end tests running the example DAGs inside the docker-compose Airflow worker."""
+
+from __future__ import annotations
+
+import shutil
 import subprocess
-import time
+
 import pytest
 
 pytestmark = pytest.mark.integration_test
 
-container_name = 'docker-airflow-worker-1'
+WORKER_CONTAINER = "docker-airflow-worker-1"
+DAG_IDS = ["airflow_test_couchbase_cluster", "airflow_test_couchbase_scope"]
 
 
-@pytest.fixture(autouse=True)
-def setup_before_test(request):
-    print("=============================================")
-    print("Executing ", request.node.name)
-    print("=============================================")
+def run_in_worker(*command: str) -> subprocess.CompletedProcess[str]:
+    """Run a command inside the Airflow worker container and return its completed process."""
+    docker = shutil.which("docker")
+    if docker is None:
+        pytest.skip("docker is not available on this machine")
+
+    result = subprocess.run(  # noqa: S603 - fixed command, no shell, test-only helper.
+        [docker, "exec", WORKER_CONTAINER, *command],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    print(result.stdout)  # noqa: T201 - surfaced by pytest when the assertion below fails.
+    print(result.stderr)  # noqa: T201
+    return result
 
 
-def run_docker_exec(command):
-
-    result = subprocess.run(['docker', 'exec', container_name] + command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-    output = result.stdout.decode("utf-8")
-    print(output)
-
-    return result, output
-
-
-def assert_airflow_dag_log_contains(string, output):
-    assert string in output
-
-
-def assert_airflow_dag_completed(result):
-    assert result.returncode == 0
-
-
-def assert_airflow_dag_failed(result):
-    assert result.returncode == 1
-
-
-def test_airflow_test_cb_cluster():
-
-    command = 'airflow dags test airflow_test_couchbase_cluster'
-    result, output = run_docker_exec(command)
-
-    assert_airflow_dag_completed(result)
-
-
-def test_airflow_test_cb_scope():
-
-    command = 'airflow dags test airflow_test_couchbase_scope'
-    result, output = run_docker_exec(command)
-
-    assert_airflow_dag_completed(result)
-
-
-if __name__ == '__main__':
-    pytest.main()
+@pytest.mark.parametrize("dag_id", DAG_IDS)
+def test_example_dag_runs(dag_id: str):
+    result = run_in_worker("airflow", "dags", "test", dag_id)
+    assert result.returncode == 0, f"DAG {dag_id} failed:\n{result.stdout}\n{result.stderr}"

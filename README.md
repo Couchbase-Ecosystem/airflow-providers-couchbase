@@ -49,6 +49,8 @@ pip install airflow-providers-couchbase
 - A running Couchbase cluster accessible from your Docker container
 - The travel-sample bucket available in your Couchbase cluster
 
+> The stack runs **Apache Airflow 3.3.1**, which this provider requires (Python 3.11+).
+
 ### Connecting to a Local Couchbase Server
 
 If you're running Couchbase Server locally (either installed natively or in Docker), you'll need to make some adjustments to connect from the Airflow containers:
@@ -95,7 +97,15 @@ Remember to initialize your Couchbase Server with:
    cd docker
    ```
 
-2. **Build and Run the Docker Containers**:
+2. **Create the `.env` file**:
+
+   Airflow 3's compose file reads `AIRFLOW_UID` and `FERNET_KEY` from `docker/.env`:
+
+   ```bash
+   printf 'AIRFLOW_UID=%s\nFERNET_KEY=%s\n' "$(id -u)" "$(python -c 'import base64,os; print(base64.urlsafe_b64encode(os.urandom(32)).decode())')" > .env
+   ```
+
+3. **Build and Run the Docker Containers**:
 
    ```bash
    # Initialize the Airflow database and create the first user account
@@ -105,13 +115,13 @@ Remember to initialize your Couchbase Server with:
    docker compose up --build
    ```
 
-3. **Access the Airflow Web UI**:
+4. **Access the Airflow Web UI**:
    - Open your web browser: <http://localhost:8080>
    - Login credentials:
      - Username: `airflow`
      - Password: `airflow`
 
-4. **Configure a Couchbase Connection**:
+5. **Configure a Couchbase Connection**:
    - Go to Admin -> Connections
    - Click "+" to add a new connection
    - Fill in the details:
@@ -122,12 +132,12 @@ Remember to initialize your Couchbase Server with:
      - Password: Your Couchbase password
      - Extra: Additional configuration parameters (JSON format)
 
-5. **Trigger the DAG**:
+6. **Trigger the DAG**:
    - Go to DAGs view
    - Find "airflow_test_couchbase_cluster" DAG
    - Click "Play" to trigger a manual run
 
-6. **Monitor the Execution**:
+7. **Monitor the Execution**:
    - Click on the DAG run to view progress
    - View logs, duration, and status for each task
    - For a visual guide of this process, check our step-by-step tutorial on [docs/videos/airflow](docs/videos/airflow.mp4)

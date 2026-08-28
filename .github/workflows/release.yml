@@ -16,10 +16,13 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          # git-chglog needs the full history and tags to build the changelog.
+          fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: 3.x
 
@@ -28,28 +31,11 @@ jobs:
           pip install --upgrade pip 
           pip install hatch
 
-      - name: Download the latest release tarball
-        run: |
-          curl -s https://api.github.com/repos/git-chglog/git-chglog/releases/latest \
-          | grep "browser_download_url.*linux_amd64.tar.gz" \
-          | cut -d '"' -f 4 \
-          | wget -qi - -O /tmp/git-chglog_linux_amd64.tar.gz
-  
-      - name: Extract the tarball
-        run: |
-          tar -xzf /tmp/git-chglog_linux_amd64.tar.gz -C /tmp
-
-      - name: Move the binary to a directory in your PATH
-        run: sudo mv /tmp/git-chglog /usr/local/bin/
-
-      - name: Clean up
-        run: rm /tmp/git-chglog_linux_amd64.tar.gz
-
       - name: Generate Changelog
         run: |
           go install github.com/git-chglog/git-chglog/cmd/git-chglog@v0.15.4
           # Generate the changelog using git-chglog and store it in a temporary file
-          git-chglog -c ./.chglog/config-action.yml -o /tmp/changelog.md  
+          git-chglog -c ./.chglog/config-action.yml -o /tmp/changelog.md
 
 
       - name: Build package
