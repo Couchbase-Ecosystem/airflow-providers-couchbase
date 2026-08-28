@@ -19,103 +19,106 @@
 
 from __future__ import annotations
 
-import json
 from datetime import timedelta
-from typing import TYPE_CHECKING, Any, Optional, Union, overload
+from typing import TYPE_CHECKING, Any, TypedDict
 
-import couchbase
-import couchbase.collection
+from couchbase.auth import Authenticator, CertificateAuthenticator, PasswordAuthenticator
 from couchbase.cluster import Cluster
 from couchbase.options import ClusterOptions, Compression, IpProtocol, KnownConfigProfiles, TLSVerifyMode
 
-from airflow.hooks.base import BaseHook
+from airflow.sdk import BaseHook
 
 if TYPE_CHECKING:
     from types import TracebackType
+    from typing import Self
+
+    from couchbase.bucket import Bucket
+    from couchbase.collection import Collection
+    from couchbase.scope import Scope
 
 
-class Config(dict):
-    @overload
-    def __init__(
-        self,
-        profile: Optional[KnownConfigProfiles] = None,
-        # timeout_options
-        bootstrap_timeout: Optional[timedelta] = None,
-        resolve_timeout: Optional[timedelta] = None,
-        connect_timeout: Optional[timedelta] = None,
-        kv_timeout: Optional[timedelta] = None,
-        kv_durable_timeout: Optional[timedelta] = None,
-        views_timeout: Optional[timedelta] = None,
-        query_timeout: Optional[timedelta] = None,
-        analytics_timeout: Optional[timedelta] = None,
-        search_timeout: Optional[timedelta] = None,
-        management_timeout: Optional[timedelta] = None,
-        dns_srv_timeout: Optional[timedelta] = None,
-        idle_http_connection_timeout: Optional[timedelta] = None,
-        config_idle_redial_timeout: Optional[timedelta] = None,
-        config_total_timeout: Optional[timedelta] = None,
-        # timeout_options
-        # tracing_options
-        tracing_threshold_kv: Optional[timedelta] = None,
-        tracing_threshold_view: Optional[timedelta] = None,
-        tracing_threshold_query: Optional[timedelta] = None,
-        tracing_threshold_search: Optional[timedelta] = None,
-        tracing_threshold_analytics: Optional[timedelta] = None,
-        tracing_threshold_eventing: Optional[timedelta] = None,
-        tracing_threshold_management: Optional[timedelta] = None,
-        tracing_threshold_queue_size: Optional[int] = None,
-        tracing_threshold_queue_flush_interval: Optional[timedelta] = None,
-        tracing_orphaned_queue_size: Optional[int] = None,
-        tracing_orphaned_queue_flush_interval: Optional[timedelta] = None,
-        # tracing_options
-        enable_tls: Optional[bool] = None,
-        enable_mutation_tokens: Optional[bool] = None,
-        enable_tcp_keep_alive: Optional[bool] = None,
-        ip_protocol: Optional[Union[IpProtocol, str]] = None,
-        enable_dns_srv: Optional[bool] = None,
-        show_queries: Optional[bool] = None,
-        enable_unordered_execution: Optional[bool] = None,
-        enable_clustermap_notification: Optional[bool] = None,
-        enable_compression: Optional[bool] = None,
-        enable_tracing: Optional[bool] = None,
-        enable_metrics: Optional[bool] = None,
-        network: Optional[str] = None,
-        tls_verify: Optional[Union[TLSVerifyMode, str]] = None,
-        tcp_keep_alive_interval: Optional[timedelta] = None,
-        config_poll_interval: Optional[timedelta] = None,
-        config_poll_floor: Optional[timedelta] = None,
-        max_http_connections: Optional[int] = None,
-        user_agent_extra: Optional[str] = None,
-        logging_meter_emit_interval: Optional[timedelta] = None,
-        log_redaction: Optional[bool] = None,
-        compression: Optional[Compression] = None,
-        compression_min_size: Optional[int] = None,
-        compression_min_ratio: Optional[float] = None,
-        dns_nameserver: Optional[str] = None,
-        dns_port: Optional[int] = None,
-        disable_mozilla_ca_certificates: Optional[bool] = None,
-        dump_configuration: Optional[bool] = None,
-    ):
-        """Config instance."""
+class Config(TypedDict, total=False):
+    """
+    Cluster level options forwarded to :class:`~couchbase.options.ClusterOptions`.
 
-    @overload
-    def __init__(self, **kwargs):
-        """Config instance."""
+    Every key is optional; omitted keys fall back to the Couchbase SDK defaults. See
+    https://docs.couchbase.com/python-sdk/current/ref/client-settings.html for the full reference.
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    ``profile`` is not a :class:`~couchbase.options.ClusterOptions` argument: it is applied
+    separately via :meth:`~couchbase.options.ClusterOptions.apply_profile`.
+    """
+
+    profile: KnownConfigProfiles | str
+
+    # Timeout options.
+    bootstrap_timeout: timedelta
+    resolve_timeout: timedelta
+    connect_timeout: timedelta
+    kv_timeout: timedelta
+    kv_durable_timeout: timedelta
+    views_timeout: timedelta
+    query_timeout: timedelta
+    analytics_timeout: timedelta
+    search_timeout: timedelta
+    management_timeout: timedelta
+    dns_srv_timeout: timedelta
+    idle_http_connection_timeout: timedelta
+    config_idle_redial_timeout: timedelta
+    config_total_timeout: timedelta
+
+    # Tracing options.
+    tracing_threshold_kv: timedelta
+    tracing_threshold_view: timedelta
+    tracing_threshold_query: timedelta
+    tracing_threshold_search: timedelta
+    tracing_threshold_analytics: timedelta
+    tracing_threshold_eventing: timedelta
+    tracing_threshold_management: timedelta
+    tracing_threshold_queue_size: int
+    tracing_threshold_queue_flush_interval: timedelta
+    tracing_orphaned_queue_size: int
+    tracing_orphaned_queue_flush_interval: timedelta
+
+    # General options.
+    enable_tls: bool
+    enable_mutation_tokens: bool
+    enable_tcp_keep_alive: bool
+    ip_protocol: IpProtocol | str
+    enable_dns_srv: bool
+    show_queries: bool
+    enable_unordered_execution: bool
+    enable_clustermap_notification: bool
+    enable_compression: bool
+    enable_tracing: bool
+    enable_metrics: bool
+    network: str
+    tls_verify: TLSVerifyMode | str
+    tcp_keep_alive_interval: timedelta
+    config_poll_interval: timedelta
+    config_poll_floor: timedelta
+    max_http_connections: int
+    user_agent_extra: str
+    logging_meter_emit_interval: timedelta
+    log_redaction: bool
+    compression: Compression
+    compression_min_size: int
+    compression_min_ratio: float
+    dns_nameserver: str
+    dns_port: int
+    disable_mozilla_ca_certificates: bool
+    dump_configuration: bool
 
 
 class CouchbaseHook(BaseHook):
     """
-    Couchbase Connection Class
+    Interact with a Couchbase cluster.
 
     Documentation on establishing a connection can be found here:
     https://docs.couchbase.com/python-sdk/current/hello-world/start-using-sdk.html
 
-    When setting up the Couchbase connection, you can specify the certificate path in the `extra`
-    field of your connection configuration.
-    Example configuration:
+    The authenticator is chosen from the Airflow connection: when neither a username nor a
+    password is set, certificate authentication is used, otherwise password authentication is.
+    Certificate paths are read from the ``extra`` field of the connection:
 
     ```json
     {
@@ -130,58 +133,87 @@ class CouchbaseHook(BaseHook):
     - For **certificate authentication**, you must specify `cert_path`, `key_path`, and `trust_store_path`.
 
     Make sure to provide valid paths according to your environment.
+
+    :param couchbase_conn_id: ID of the Airflow connection holding the cluster credentials.
+    :param config: Optional cluster level options, see :class:`Config`.
     """
 
     conn_name_attr = "couchbase_conn_id"
     default_conn_name = "couchbase_default"
     conn_type = "couchbase"
     hook_name = "Couchbase"
-    default_config = Config()
 
-    def __init__(self, couchbase_conn_id: str = default_conn_name, config: Config = default_config) -> None:
+    def __init__(self, couchbase_conn_id: str = default_conn_name, config: Config | None = None) -> None:
         super().__init__()
         self.couchbase_conn_id = couchbase_conn_id
-        self.cluster_config = config
+        self.cluster_config: Config = config if config is not None else Config()
         self.cluster: Cluster | None = None
 
     def test_connection(self) -> tuple[bool, str]:
         """Test the Couchbase connectivity from UI."""
-        hook = CouchbaseHook(couchbase_conn_id=self.couchbase_conn_id)
-        status = True
         try:
-            hook.get_conn()
-            status = True
-            message = "Connection successfully tested"
-        except Exception as e:
-            status = False
-            message = str(e)
-        return status, message
+            self.get_conn()
+        except Exception as exc:
+            # Any failure is reported back to the UI rather than raised.
+            return False, str(exc)
+        else:
+            return True, "Connection successfully tested"
+        finally:
+            self.close()
 
-    @classmethod
-    def get_ui_field_behaviour(cls) -> dict[str, Any]:
-        """Return custom field behaviour."""
-        return {
-            "hidden_fields": ["schema", "port"],
-            "relabeling": {
-                "host": "connection",
-                "login": "username",
-            },
-            "placeholders": {
-                "login": "Username to use for authentication",
-                "password": "Password to use for authentication",
-                "host": "Couchbase connection string",
-                "extra": json.dumps(
-                    {
-                        "cert_path": "/path/to/custom/ca-cert",
-                        "key_path": "/path/to/key-file",
-                        "trust_store_path": "/path/to/cert-file",
-                    },
-                    indent=2,
-                ),
-            },
-        }
+    def get_conn(self) -> Cluster:
+        """Fetch the Couchbase cluster, connecting on first use and reusing it afterwards."""
+        if self.cluster is None:
+            connection = self.get_connection(self.couchbase_conn_id)
+            if not connection.host:
+                msg = f"Connection {self.couchbase_conn_id!r} has no host set, expected a Couchbase connection string."
+                raise ValueError(msg)
+            authenticator = self._build_authenticator(
+                login=connection.login,
+                password=connection.password,
+                extra=connection.extra_dejson,
+            )
+            # `Cluster.__init__` annotates `*options` with the SDK's own deprecated
+            # `couchbase.cluster.ClusterOptions` shim instead of the `couchbase.options` class it
+            # documents (and which alone carries `apply_profile`), so checkers see a false mismatch.
+            options = self._build_cluster_options(authenticator)
+            self.cluster = Cluster(connection.host, options)  # pyright: ignore[reportArgumentType]
+        return self.cluster
 
-    def __enter__(self):
+    def get_bucket(self, bucket: str) -> Bucket:
+        """
+        Fetch a couchbase bucket object.
+
+        :param bucket: Name of the bucket.
+        """
+        return self.get_conn().bucket(bucket)
+
+    def get_scope(self, bucket: str, scope: str) -> Scope:
+        """
+        Fetch a couchbase scope object for querying.
+
+        :param bucket: Name of the bucket holding the scope.
+        :param scope: Name of the scope.
+        """
+        return self.get_bucket(bucket).scope(scope)
+
+    def get_collection(self, bucket: str, scope: str, collection: str) -> Collection:
+        """
+        Fetch a couchbase collection object for querying.
+
+        :param bucket: Name of the bucket holding the scope.
+        :param scope: Name of the scope holding the collection.
+        :param collection: Name of the collection.
+        """
+        return self.get_scope(bucket, scope).collection(collection)
+
+    def close(self) -> None:
+        """Close the Couchbase cluster if one is open, so it can be reopened by :meth:`get_conn`."""
+        if self.cluster is not None:
+            self.cluster.close()
+            self.cluster = None
+
+    def __enter__(self) -> Self:
         """Return the object when a context manager is created."""
         return self
 
@@ -192,49 +224,33 @@ class CouchbaseHook(BaseHook):
         exc_tb: TracebackType | None,
     ) -> None:
         """Close couchbase cluster when exiting the context manager."""
-        if self.cluster is not None:
-            self.cluster.close()
-            self.cluster: Cluster | None = None
+        self.close()
 
-    def get_conn(self) -> Cluster:
-        """Fetch Couchbase Cluster."""
-        if self.cluster is not None:
-            return self.cluster
-
-        connection = self.get_connection(self.couchbase_conn_id)
-        connection_str = connection.host
-        username = connection.login
-        password = connection.password
-        cert_path = connection.extra_dejson.get("cert_path")
-        key_path = connection.extra_dejson.get("key_path")
-        trust_store_path = connection.extra_dejson.get("trust_store_path")
-
-        auth: couchbase.auth.Authenticator
-        if not username and not password:
-            auth = couchbase.auth.CertificateAuthenticator(cert_path, key_path, trust_store_path)
-        else:
-            auth = couchbase.auth.PasswordAuthenticator(username, password, cert_path)
-
-        config = {**self.cluster_config}
-        profile = config.get("profile")
-        if profile:
-            del config["profile"]
-        options = ClusterOptions(authenticator=auth, **config)
-        if profile:
+    def _build_cluster_options(self, authenticator: Authenticator) -> ClusterOptions:
+        """Turn :attr:`cluster_config` into :class:`~couchbase.options.ClusterOptions`."""
+        config: dict[str, Any] = dict(self.cluster_config)
+        profile = config.pop("profile", None)
+        options = ClusterOptions(authenticator=authenticator, **config)
+        if profile is not None:
             options.apply_profile(profile)
-        self.cluster = Cluster(connection_str, options)
-        return self.cluster
+        return options
 
-    def get_scope(self, bucket: str, scope: str) -> couchbase.collection.Scope:
-        """
-        Fetch a couchbase scope object for querying.
-        """
-        cluster = self.get_conn()
-        return cluster.bucket(bucket).scope(scope)
+    @staticmethod
+    def _build_authenticator(login: str | None, password: str | None, extra: dict[str, Any]) -> Authenticator:
+        """Build the authenticator matching the credentials found on the Airflow connection."""
+        cert_path = extra.get("cert_path")
+        if login or password:
+            if not (login and password):
+                msg = "Password authentication requires both a username and a password on the connection."
+                raise ValueError(msg)
+            return PasswordAuthenticator(login, password, cert_path)
 
-    def get_collection(self, bucket: str, scope: str, collection: str) -> couchbase.collection.Collection:
-        """
-        Fetch a couchbase collection object for querying.
-        """
-        cluster = self.get_conn()
-        return cluster.bucket(bucket).scope(scope).collection(collection)
+        key_path = extra.get("key_path")
+        trust_store_path = extra.get("trust_store_path")
+        if not (cert_path and key_path and trust_store_path):
+            msg = (
+                "Certificate authentication requires 'cert_path', 'key_path' and 'trust_store_path' "
+                "in the connection extra, or a username/password for password authentication."
+            )
+            raise ValueError(msg)
+        return CertificateAuthenticator(cert_path, key_path, trust_store_path)

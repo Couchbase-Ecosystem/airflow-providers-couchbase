@@ -11,23 +11,22 @@ authors = [
 
 classifiers = [
     "Development Status :: 4 - Beta",
+    "Framework :: Apache Airflow",
+    "Framework :: Apache Airflow :: Provider",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: Implementation :: CPython",
-    "Programming Language :: Python :: Implementation :: PyPy",
 ]
 
 description = "A package to simplify connecting to the couchbase nosql database from Apache Airflow"
 readme = "README.md"
 license = {file = "LICENSE"}
-requires-python = ">=3.7"
+requires-python = ">=3.11"
 dependencies = [
-  "apache-airflow >= 2.2",
-  "couchbase==4.*",
+  "apache-airflow >= 3.3.1, < 4.0.0",
+  "couchbase == 4.*",
 ]
 
 [project.urls]
@@ -35,20 +34,29 @@ Documentation = "https://github.com/Couchbase-Ecosystem/airflow-providers-couchb
 Issues = "https://github.com/Couchbase-Ecosystem/airflow-providers-couchbase/issues"
 Source = "https://github.com/Couchbase-Ecosystem/airflow-providers-couchbase"
 
+[project.entry-points."apache_airflow_provider"]
+provider_info = "airflow_providers_couchbase:get_provider_info"
+
 [tool.hatch.version]
 path = "airflow_providers_couchbase/__about__.py"
 
-
-[tool.hatch]
-packages = [
-    { include = "airflow_providers_couchbase" },
-]
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["airflow_providers_couchbase"]
 
+[tool.hatch.build.targets.sdist]
+include = [
+  "airflow_providers_couchbase",
+  "tests",
+  "README.md",
+  "LICENSE",
+]
 
-# Define environments for development and testing
+
+## Development environments
+
 [tool.hatch.envs.default]
 extra-dependencies = [
     "pytest",
@@ -60,29 +68,6 @@ test-cov = "coverage run -m pytest {args:tests}"
 cov-report = ["- coverage combine", "coverage html"]
 cov = ["test-cov", "cov-report"]
 
-[project.entry-points."apache_airflow_provider"]
-provider_info = "airflow_providers_couchbase:get_provider_info"
-
-
-## linting and test
-
-[tool.coverage.run]
-source = ["airflow_providers_couchbase", "tests"]
-branch = true
-parallel = false
-
-[tool.coverage.paths]
-airflow_providers_couchbase = ["airflow_providers_couchbase"]
-tests = ["tests"]
-
-[tool.coverage.report]
-exclude_lines = [
-  "no cov",
-  "if __name__ == .__main__.:",
-  "if TYPE_CHECKING:",
-]
-
-# Add linting environment
 [tool.hatch.envs.lint]
 detached = true
 dependencies = [
@@ -92,7 +77,7 @@ dependencies = [
 ]
 
 [tool.hatch.envs.lint.scripts]
-typing = "mypy --install-types --non-interactive --explicit-package-bases {args:airflow_providers_couchbase tests examples}"
+typing = "mypy --install-types --non-interactive --explicit-package-bases {args:airflow_providers_couchbase tests docker/dags}"
 style = [
   "ruff check {args:.}",
   "black --check --diff {args:.}",
@@ -108,16 +93,15 @@ all = [
 ]
 
 
-[tool.hatch.metadata]
-allow-direct-references = true
+## Linting, typing and test configuration
 
 [tool.black]
-target-version = ["py37"]
+target-version = ["py311"]
 line-length = 130
 skip-string-normalization = true
 
 [tool.ruff]
-target-version = "py37"
+target-version = "py311"
 line-length = 130
 lint.select = [
   "A",
@@ -147,8 +131,6 @@ lint.select = [
   "YTT",
 ]
 lint.ignore = [
-  #A001 Variable `filter` is shadowing a Python builtin
-  "A001", 
   # Allow non-abstract empty methods in abstract base classes
   "B027",
   # Allow boolean positional values in function calls, like `dict.get(... True)`
@@ -157,47 +139,32 @@ lint.ignore = [
   "S105", "S106", "S107",
   # Ignore complexity
   "C901", "PLR0911", "PLR0912", "PLR0913", "PLR0915",
-  
-  #Exception must not use a string literal, assign to variable first
-  "EM101",
-
-  #Too many arguments for `logging` format string
-  "PLE1205",
-
-  
-
-  # Use `X | Y` for type annotations
-  "UP007"
 ]
 lint.unfixable = [
   # Don't touch unused imports
   "F401",
 ]
 
-lint.exclude = ["tests/**/*"]
-
-[tool.mypy]
-ignore_missing_imports = true
-
 [tool.ruff.lint.isort]
-known-first-party = ["airflow"]
+known-first-party = ["airflow", "airflow_providers_couchbase"]
 
 [tool.ruff.lint.flake8-tidy-imports]
 ban-relative-imports = "parents"
 
 [tool.ruff.lint.per-file-ignores]
-# Tests can use magic values, assertions, and relative imports
-"tests/**/*" = ["PLR2004", "S101", "TID252"]
+# Tests can use magic values, assertions, and relative imports, and `mock.patch`
+# injects mocks that a test does not always need to inspect.
+"tests/**/*" = ["ARG002", "PLR2004", "S101", "TID252"]
+# Example DAGs favour readability over lint purity
+"docker/dags/*" = ["T201"]
 
-
-
-
-
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
+testpaths = ["tests"]
 markers = [
-  "unit: unit tests",
-  "integration: integration tests",
-  "embedders: embedders tests",
-  "generators: generators tests",
+  "unit_test: unit tests",
+  "integration_test: integration tests",
 ]

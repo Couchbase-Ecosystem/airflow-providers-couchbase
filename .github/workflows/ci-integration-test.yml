@@ -14,16 +14,18 @@ jobs:
     
     steps:
   
-    - uses: actions/checkout@v3
-    - name: Set up Python 3.9
-      uses: actions/setup-python@v3
+    - uses: actions/checkout@v4
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
       with:
-        python-version: "3.9"
+        python-version: "3.11"
     
     - name: Install & Run Airflow
       run: |
         cd docker
-        echo -e "AIRFLOW_UID=$(id -u)" > .env
+        # Airflow 3's compose file reads both of these from .env.
+        echo "AIRFLOW_UID=$(id -u)" > .env
+        echo "FERNET_KEY=$(python -c 'import base64,os; print(base64.urlsafe_b64encode(os.urandom(32)).decode())')" >> .env
         docker compose up airflow-init
         docker compose up -d --build
     

@@ -1,0 +1,28 @@
+# The build context is the repository root (see docker/docker-compose.yaml), and the Dockerfile
+# copies it wholesale, so keep local environments and caches out of the image.
+.git
+.github
+.venv
+venv/
+env/
+dist/
+build/
+*.egg-info
+
+# Airflow's own runtime state, bind-mounted by docker-compose instead.
+docker/logs
+docker/config
+docker/plugins
+
+# Caches and OS cruft
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage*
+.DS_Store
+
+# Large media not needed to install the provider
+docs/videos
