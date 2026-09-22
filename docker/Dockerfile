@@ -1,4 +1,4 @@
-FROM apache/airflow:3.3.1-python3.12
+FROM apache/airflow:3.3.2-python3.12
 
 COPY ./ /opt/airflow/airflow_providers_couchbase
 

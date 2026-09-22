@@ -66,7 +66,7 @@ Breaking changes:
 - A running Couchbase cluster accessible from your Docker container
 - The travel-sample bucket available in your Couchbase cluster
 
-> The stack runs **Apache Airflow 3.3.1**, which this provider requires (Python 3.11+).
+> The stack runs **Apache Airflow 3.3.2**, which this provider requires (Python 3.11+).
 
 ### Connecting to a Local Couchbase Server
 
